@@ -12,22 +12,41 @@ import Dropzone from "react-dropzone";
 import axios from "axios";
 import "./App.scss";
 
+import FileList from "./components/FileList";
+
 function App() {
   const initialState = {
     title: "",
     subtitle: "",
     files: [],
-    isUploading: false,
-    alertIsOpen: false,
-    msg: null,
-    error: false
+    isUploading: false
   };
   const [appState, setAppState] = useState(initialState);
+  const [alerts, setAlerts] = useState({
+    error: false,
+    msg: null,
+    alertIsOpen: false
+  });
+
+  const [timer, setTimer] = useState(null);
 
   const onDrop = acceptedFiles => {
-    setAppState({
-      ...appState,
-      files: acceptedFiles
+    // console.log(acceptedFiles)
+    Array.from(acceptedFiles).map(i => {
+      if (!/image\//g.test(i.type)) {
+        setAlerts({
+          error: true,
+          msg: "You selected file(s) that are not images.",
+          alertIsOpen: true
+        });
+        removeAlert();
+        return;
+      } else {
+        setAppState({
+          ...appState,
+          files: [...appState.files, ...acceptedFiles]
+        });
+      }
     });
   };
 
@@ -38,12 +57,35 @@ function App() {
     });
   };
 
+  const removeAlert = () => {
+    if (timer) {
+      clearTimeout(timer);
+    }
+    var id = setTimeout(() => {
+      setAlerts({
+        error: false,
+        msg: null,
+        alertIsOpen: false
+      });
+    }, 3000);
+    setTimer(id);
+  };
+
   const handleSubmit = e => {
     e.preventDefault();
+    if (!appState.title) {
+      setAlerts({
+        error: true,
+        alertIsOpen: true,
+        msg: "Please provide a title"
+      });
+      removeAlert();
+      return;
+    }
     setAppState({
       ...appState,
       isUploading: true
-    })
+    });
     const fd = new FormData();
     fd.append("title", appState.title);
     fd.append("subtitle", appState.subtitle);
@@ -57,30 +99,37 @@ function App() {
       .then(res => {
         setAppState({
           ...initialState,
-          isUploading: false,
-          alertIsOpen: true,
-          msg: res.data.msg
+          isUploading: false
         });
-        setTimeout(() => {
-          setAppState(initialState);
-        }, 5000);
+        setAlerts({
+          alertIsOpen: true,
+          msg: res.data.msg,
+          files: []
+        });
+        removeAlert();
       })
       .catch(err => {
-        setAppState({
-          ...appState,
-          isUploading: false,
+        setAlerts({
           alertIsOpen: true,
           msg: err.response.data.msg,
           error: true
         });
-        setTimeout(() => {
-          setAppState({
-            ...appState,
-            alertIsOpen: false,
-            msg: null
-          });
-        }, 5000);
+        setAppState({
+          ...appState,
+          isUploading: false
+        });
+        removeAlert();
       });
+  };
+
+  const removeItem = e => {
+    const newArr = appState.files.filter(i => {
+      return i.name !== e.target.id;
+    });
+    setAppState({
+      ...appState,
+      files: newArr
+    });
   };
 
   return (
@@ -94,10 +143,10 @@ function App() {
           </>
         ) : null}
         <Alert
-          isOpen={appState.alertIsOpen}
-          color={appState.error ? "danger" : "success"}
+          isOpen={alerts.alertIsOpen}
+          color={alerts.error ? "danger" : "success"}
         >
-          {appState.msg}
+          {alerts.msg}
         </Alert>
         <FormGroup>
           <Label for="title">Title</Label>
@@ -106,6 +155,7 @@ function App() {
             name="title"
             value={appState.title}
             onChange={handleChange}
+            maxLength={20}
           />
         </FormGroup>
         <FormGroup>
@@ -115,6 +165,7 @@ function App() {
             name="subtitle"
             value={appState.subtitle}
             onChange={handleChange}
+            maxLength={50}
           />
         </FormGroup>
 
@@ -142,7 +193,14 @@ function App() {
             </div>
           )}
         </Dropzone>
-        <Button onClick={handleSubmit}>Post</Button>
+        <FileList files={appState.files} removeItem={removeItem} />
+        <Button
+          onClick={handleSubmit}
+          className="mt-2"
+          disabled={appState.files.length === 0 ? true : false}
+        >
+          Post
+        </Button>
       </Container>
     </div>
   );
