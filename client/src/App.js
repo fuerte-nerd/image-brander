@@ -12,6 +12,8 @@ import Dropzone from "react-dropzone";
 import axios from "axios";
 import "./App.scss";
 
+import { Transition } from "react-spring/renderprops";
+
 import FileList from "./components/FileList";
 
 function App() {
@@ -31,7 +33,6 @@ function App() {
   const [timer, setTimer] = useState(null);
 
   const onDrop = acceptedFiles => {
-    // console.log(acceptedFiles)
     Array.from(acceptedFiles).map(i => {
       if (!/image\//g.test(i.type)) {
         setAlerts({
@@ -40,7 +41,6 @@ function App() {
           alertIsOpen: true
         });
         removeAlert();
-        return;
       } else {
         setAppState({
           ...appState,
@@ -136,12 +136,25 @@ function App() {
     <div className="App">
       <h1>Image Brander</h1>
       <Container>
-        {appState.isUploading ? (
-          <>
-            <p>Uploading images. Please wait...</p>
-            <Spinner color="primary" />
-          </>
-        ) : null}
+        <Transition
+          items={appState.isUploading}
+          from={{ opacity: 0 }}
+          enter={{ opacity: 1 }}
+          leave={{ opacity: 0 }}
+        >
+          {show =>
+            show &&
+            (aniProps => (
+              <div
+                style={aniProps}
+                className="bg-info rounded text-white text-center p-4 mb-2"
+              >
+                <Spinner color="white" />
+                <p className="m-0">Uploading images. Please wait...</p>
+              </div>
+            ))
+          }
+        </Transition>
         <Alert
           isOpen={alerts.alertIsOpen}
           color={alerts.error ? "danger" : "success"}
