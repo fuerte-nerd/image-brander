@@ -5,6 +5,9 @@ import { Transition } from "react-spring/renderprops";
 export default function FileList(props) {
   return (
     <ListGroup>
+        {props.files.length > 0 
+        ? (<span className="mt-3 font-weight-bold">Selected photos</span>)
+      : null}
       <Transition
         items={props.files}
         keys={item => item.name}

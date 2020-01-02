@@ -10,6 +10,11 @@ import {
 } from "reactstrap";
 import Dropzone from "react-dropzone";
 import axios from "axios";
+import { FilePicker } from "react-file-picker";
+import { CompactPicker } from "react-color";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faInstagram } from "@fortawesome/free-brands-svg-icons";
+import { faImages } from "@fortawesome/free-solid-svg-icons";
 import "./App.scss";
 
 import { Transition } from "react-spring/renderprops";
@@ -19,11 +24,17 @@ import FileList from "./components/FileList";
 function App() {
   const initialState = {
     title: "",
-    subtitle: "",
+    logo: null,
     files: [],
+    colors: {
+      bg: "#000000"
+      // text: '#FFFFFF'
+    },
     isUploading: false
   };
+
   const [appState, setAppState] = useState(initialState);
+
   const [alerts, setAlerts] = useState({
     error: false,
     msg: null,
@@ -57,6 +68,13 @@ function App() {
     });
   };
 
+  const onChoice = e => {
+    setAppState({
+      ...appState,
+      logo: [e]
+    });
+  };
+
   const removeAlert = () => {
     if (timer) {
       clearTimeout(timer);
@@ -71,24 +89,26 @@ function App() {
     setTimer(id);
   };
 
+  // const changeBgColor =(color, e)=>{
+  //   console.log(e.target.parentElement)
+  // }
+
+  // const changeTextColor
+
   const handleSubmit = e => {
     e.preventDefault();
-    if (!appState.title) {
-      setAlerts({
-        error: true,
-        alertIsOpen: true,
-        msg: "Please provide a title"
-      });
-      removeAlert();
-      return;
-    }
     setAppState({
       ...appState,
       isUploading: true
     });
     const fd = new FormData();
     fd.append("title", appState.title);
-    fd.append("subtitle", appState.subtitle);
+    fd.append("titleBgColor", appState.colors.bg);
+    // fd.append("titleTextColor", appState.colors.text)
+    // fd.append("subtitle", appState.subtitle);
+    Array.from(appState.logo).forEach(file => {
+      fd.append("logo", file);
+    });
     Array.from(appState.files).forEach(file => {
       fd.append("file", file);
     });
@@ -97,6 +117,7 @@ function App() {
         "Content-Type": "multipart/form-data"
       })
       .then(res => {
+        window.open(`http://localhost:5000/download/${res.data.link}`);
         setAppState({
           ...initialState,
           isUploading: false
@@ -133,8 +154,32 @@ function App() {
   };
 
   return (
-    <div className="App">
-      <h1>Image Brander</h1>
+    <div
+      className="App"
+      style={{
+        background: "#fafafa"
+      }}
+    >
+      <div
+        className="p-4 text-center text-white mb-3"
+        style={{
+          background:
+            "linear-gradient(45deg, #f09433 0%,#e6683c 25%,#dc2743 50%,#cc2366 75%,#bc1888 100%)"
+        }}
+      >
+        <FontAwesomeIcon
+          icon={faInstagram}
+          style={{
+            fontSize: "6rem"
+          }}
+        />
+        <h1
+          className="font-weight-bold"
+          style={{ fontSize: "1.75rem", margin: 0 }}
+        >
+          Instagram Image Brander
+        </h1>
+      </div>
       <Container>
         <Transition
           items={appState.isUploading}
@@ -150,7 +195,7 @@ function App() {
                 className="bg-info rounded text-white text-center p-4 mb-2"
               >
                 <Spinner color="white" />
-                <p className="m-0">Uploading images. Please wait...</p>
+                <p className="m-0">Processing images. Please wait...</p>
               </div>
             ))
           }
@@ -162,26 +207,55 @@ function App() {
           {alerts.msg}
         </Alert>
         <FormGroup>
-          <Label for="title">Title</Label>
+          <Label for="logo">
+            Logo <small className="text-muted">(Must be a square image)</small>
+          </Label>
+          <FilePicker extensions={["jpg", "jpeg", "png"]} onChange={onChoice}>
+            <Button color={appState.logo ? "warning" : "success"} size="sm">
+              {!appState.logo ? `Select a logo` : `Replace logo`}
+            </Button>
+          </FilePicker>
+          <small>
+            {appState.logo ? (
+              <div>
+                <span className="font-weight-bold">Current selection: </span>{" "}
+                <span>{appState.logo[0].name}</span>
+              </div>
+            ) : null}
+          </small>
+        </FormGroup>
+        <FormGroup>
+          <Label for="title">
+            Caption{" "}
+            
+          </Label>
+          <small className="text-muted float-right">
+              {appState.title.length}/20 characters
+            </small>
           <Input
             id="title"
             name="title"
             value={appState.title}
             onChange={handleChange}
             maxLength={20}
+            placeholder="Optional"
           />
         </FormGroup>
-        <FormGroup>
-          <Label for="subtitle">Subtitle</Label>
-          <Input
-            id="subtitle"
-            name="subtitle"
-            value={appState.subtitle}
-            onChange={handleChange}
-            maxLength={50}
-          />
-        </FormGroup>
-
+        {appState.title.length > 0 ? (
+          <FormGroup>
+            <Label style={{ display: "block" }}>Title Background Color</Label>
+            <CompactPicker
+              color={appState.colors.bg}
+              section="bg"
+              onChange={color => {
+                const newData = Object.assign({}, appState);
+                newData.colors.bg = color.hex;
+                setAppState(newData);
+              }}
+            />
+          </FormGroup>
+        ) : null}
+        
         <Dropzone onDrop={onDrop}>
           {({ getRootProps, getInputProps, isDragActive }) => (
             <div
@@ -189,7 +263,7 @@ function App() {
               style={{
                 border: "1px dashed grey",
                 color: "grey",
-                height: "7rem",
+                height: "14rem",
                 borderRadius: ".25rem",
                 display: "flex",
                 justifyContent: "center",
@@ -201,18 +275,28 @@ function App() {
               {isDragActive ? (
                 <p className="mb-0">Drop files here</p>
               ) : (
-                <p className="mb-0">Drop files or click here to upload</p>
+                <div className="text-center">
+                  <FontAwesomeIcon
+                    icon={faImages}
+                    style={{ fontSize: "3rem" }}
+                  />
+                  <p className="mb-0">Drop files or click here to upload</p>
+                </div>
               )}
             </div>
           )}
         </Dropzone>
         <FileList files={appState.files} removeItem={removeItem} />
         <Button
+          block
+          color="danger"
           onClick={handleSubmit}
           className="mt-2"
-          disabled={appState.files.length === 0 ? true : false}
+          disabled={
+            appState.files.length > 0 ? (appState.logo ? false : true) : true
+          }
         >
-          Post
+          Process
         </Button>
       </Container>
     </div>
