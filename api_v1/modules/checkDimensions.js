@@ -5,11 +5,6 @@ module.exports = ({ logo, image }, mode) => {
   return new Promise((res, rej) => {
     const logoDimens = sizeOf(logo);
 
-    // make sure it's square
-    logoDimens.width !== logoDimens.height
-      ? rej("Please select a logo that has equal width and height")
-      : null;
-
     // make sure it reaches minimum dimension
     logoDimens.width < 175
       ? rej("Please select a logo that has minimum size of 175px")

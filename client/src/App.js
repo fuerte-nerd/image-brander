@@ -89,12 +89,6 @@ function App() {
     setTimer(id);
   };
 
-  // const changeBgColor =(color, e)=>{
-  //   console.log(e.target.parentElement)
-  // }
-
-  // const changeTextColor
-
   const handleSubmit = e => {
     e.preventDefault();
     setAppState({
@@ -104,8 +98,6 @@ function App() {
     const fd = new FormData();
     fd.append("title", appState.title);
     fd.append("titleBgColor", appState.colors.bg);
-    // fd.append("titleTextColor", appState.colors.text)
-    // fd.append("subtitle", appState.subtitle);
     Array.from(appState.logo).forEach(file => {
       fd.append("logo", file);
     });
@@ -116,31 +108,31 @@ function App() {
       .post("http://localhost:5000/upload", fd, {
         "Content-Type": "multipart/form-data"
       })
-      .then(res => {
-        window.open(`http://localhost:5000/download/${res.data.link}`);
-        setAppState({
-          ...initialState,
-          isUploading: false
-        });
-        setAlerts({
-          alertIsOpen: true,
-          msg: res.data.msg,
-          files: []
-        });
-        removeAlert();
-      })
-      .catch(err => {
-        setAlerts({
-          alertIsOpen: true,
-          msg: err.response.data.msg,
-          error: true
-        });
-        setAppState({
-          ...appState,
-          isUploading: false
-        });
-        removeAlert();
-      });
+      // .then(res => {
+      //   window.open(`http://localhost:5000/download/${res.data.link}`);
+      //   setAppState({
+      //     ...initialState,
+      //     isUploading: false
+      //   });
+      //   setAlerts({
+      //     alertIsOpen: true,
+      //     msg: res.data.msg,
+      //     files: []
+      //   });
+      //   removeAlert();
+      // })
+      // .catch(err => {
+      //   setAlerts({
+      //     alertIsOpen: true,
+      //     msg: err.response.data.msg,
+      //     error: true
+      //   });
+      //   setAppState({
+      //     ...appState,
+      //     isUploading: false
+      //   });
+      //   removeAlert();
+      // });
   };
 
   const removeItem = e => {
@@ -208,10 +200,10 @@ function App() {
         </Alert>
         <FormGroup>
           <Label for="logo">
-            Logo <small className="text-muted">(Must be a square image)</small>
+            Logo
           </Label>
-          <FilePicker extensions={["jpg", "jpeg", "png"]} onChange={onChoice}>
-            <Button color={appState.logo ? "warning" : "success"} size="sm">
+          <FilePicker extensions={["jpg", "jpeg", "png", "svg"]} onChange={onChoice}>
+            <Button block color={appState.logo ? "warning" : "success"} size="sm">
               {!appState.logo ? `Select a logo` : `Replace logo`}
             </Button>
           </FilePicker>
