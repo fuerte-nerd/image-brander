@@ -5,6 +5,7 @@ const uploadLogo = require("./uploadFiles/uploadLogo");
 
 module.exports = req => {
   return new Promise((res, rej) => {
+    console.log('\nUploading files...')
     createTempDirs()
       .then(() => {
         return createFileArray(req.files.file);

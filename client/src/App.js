@@ -108,31 +108,31 @@ function App() {
       .post("http://localhost:5000/upload", fd, {
         "Content-Type": "multipart/form-data"
       })
-      // .then(res => {
-      //   window.open(`http://localhost:5000/download/${res.data.link}`);
-      //   setAppState({
-      //     ...initialState,
-      //     isUploading: false
-      //   });
-      //   setAlerts({
-      //     alertIsOpen: true,
-      //     msg: res.data.msg,
-      //     files: []
-      //   });
-      //   removeAlert();
-      // })
-      // .catch(err => {
-      //   setAlerts({
-      //     alertIsOpen: true,
-      //     msg: err.response.data.msg,
-      //     error: true
-      //   });
-      //   setAppState({
-      //     ...appState,
-      //     isUploading: false
-      //   });
-      //   removeAlert();
-      // });
+      .then(res => {
+        window.open(`http://localhost:5000/download/${res.data.link}`);
+        setAppState({
+          ...initialState,
+          isUploading: false
+        });
+        setAlerts({
+          alertIsOpen: true,
+          msg: res.data.msg,
+          files: []
+        });
+        removeAlert();
+      })
+      .catch(err => {
+        setAlerts({
+          alertIsOpen: true,
+          msg: err.response.data.msg,
+          error: true
+        });
+        setAppState({
+          ...appState,
+          isUploading: false
+        });
+        removeAlert();
+      });
   };
 
   const removeItem = e => {
@@ -199,11 +199,16 @@ function App() {
           {alerts.msg}
         </Alert>
         <FormGroup>
-          <Label for="logo">
-            Logo
-          </Label>
-          <FilePicker extensions={["jpg", "jpeg", "png", "svg"]} onChange={onChoice}>
-            <Button block color={appState.logo ? "warning" : "success"} size="sm">
+          <Label for="logo">Logo</Label>
+          <FilePicker
+            extensions={["jpg", "jpeg", "png", "svg"]}
+            onChange={onChoice}
+          >
+            <Button
+              block
+              color={appState.logo ? "warning" : "success"}
+              size="sm"
+            >
               {!appState.logo ? `Select a logo` : `Replace logo`}
             </Button>
           </FilePicker>
@@ -217,13 +222,10 @@ function App() {
           </small>
         </FormGroup>
         <FormGroup>
-          <Label for="title">
-            Caption{" "}
-            
-          </Label>
+          <Label for="title">Caption </Label>
           <small className="text-muted float-right">
-              {appState.title.length}/20 characters
-            </small>
+            {appState.title.length}/20 characters
+          </small>
           <Input
             id="title"
             name="title"
@@ -247,7 +249,7 @@ function App() {
             />
           </FormGroup>
         ) : null}
-        
+
         <Dropzone onDrop={onDrop}>
           {({ getRootProps, getInputProps, isDragActive }) => (
             <div

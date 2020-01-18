@@ -4,6 +4,7 @@ const path = require("path");
 
 module.exports = req => {
   return new Promise(async (res, rej) => {
+    console.log('\nCreating Jimps...')
     const jimps = {
       images: [],
       logo: null

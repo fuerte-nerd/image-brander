@@ -2,6 +2,7 @@ const config = require("./config");
 
 const validateImages = data => {
   return new Promise((res, rej) => {
+    console.log('\nValidating images...')
     const checkSize = (jimp, orientation) => {
       if (
         jimp.img.bitmap.width < config.image_size[orientation].width ||

@@ -5,7 +5,7 @@ module.exports = files => {
       ? files.map(i => {
           fileArr.push(i);
         })
-      : fileArr.push(file);
+      : fileArr.push(files);
     res(fileArr);
   });
 };
